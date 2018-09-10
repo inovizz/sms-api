@@ -8,6 +8,7 @@ djangorestframework = "*"
 django = "*"
 coala-bears = "*"
 django-nose = "*"
+"psycopg2-binary" = "*"
 
 [dev-packages]
 "pep8" = "*"
