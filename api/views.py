@@ -1,3 +1,4 @@
+"""Views module definfing REST APIs and Business Logic."""
 import re
 
 from django.core.cache import cache
@@ -10,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .serializers import UserSerializer, SmsSerializer
 from .models import UserModel, SmsModel, PhoneNumberModel
+from . import constants
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -30,24 +32,26 @@ class SmsViewSet(viewsets.ModelViewSet):
     queryset = SmsModel.objects.all()
     serializer_class = SmsSerializer
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def retrieve(self, request):
+    def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def update(self, request):
+    def update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def partial_update(self, request):
+    def partial_update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def destroy(self, request):
+    def destroy(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class InBoundViewSet(SmsViewSet):
-    def create(self, request):
+    """View set class for Inbound sms API, it inherits the class SMSViewSet."""
+    def create(self, request, *args, **kwargs):
+        """Create method for InBoundViewSet API."""
         try:
             data = {k: v for k, v in self.request.data.items()
                     if k not in ['csrftoken']}
@@ -57,23 +61,23 @@ class InBoundViewSet(SmsViewSet):
             # check if attributes are present
             if not _from:
                 return Response({"message": "",
-                                "error": "from attribute is missing"})
+                                 "error": "from attribute is missing"})
             if not to:
                 return Response({"message": "",
-                                "error": "to attribute is missing"})
+                                 "error": "to attribute is missing"})
             if not text:
                 return Response({"message": "",
-                                "error": "text attribute is missing"})
+                                 "error": "text attribute is missing"})
             # check if attributes are valid
             if not isinstance(_from, str):
                 return Response({"message": "",
-                                "error": "from attribute is invalid"})
+                                 "error": "from attribute is invalid"})
             if not isinstance(_from, to):
                 return Response({"message": "",
-                                "error": "to attribute is invalid"})
+                                 "error": "to attribute is invalid"})
             if not isinstance(_from, text):
                 return Response({"message": "",
-                                "error": "text attribute is invalid"})
+                                 "error": "text attribute is invalid"})
 
             # check if to attribute present in phone_number table for current
             # user
@@ -84,9 +88,8 @@ class InBoundViewSet(SmsViewSet):
                     return Response({"message": "",
                                      "error": "to parameter not found"})
 
-            REGEX = "^STOP(\\r\\n|\\r|\\n)?$"
             if text:
-                pattern = re.compile(REGEX)
+                pattern = re.compile(constants.REG_EX)
                 if pattern.match(text):
                     cache.set((_from, to), True, timeout=14400)
             res = SmsModel.objects.create(**data)
@@ -100,7 +103,9 @@ class InBoundViewSet(SmsViewSet):
 
 
 class OutBoundViewSet(SmsViewSet):
-    def create(self, request):
+    """View set class for Inbound sms API, it inherits the class SMSViewSet."""
+    def create(self, request, *args, **kwargs):
+        """Create method for InBoundViewSet API."""
         try:
             data = {k: v for k, v in self.request.data.items()
                     if k not in ['csrftoken']}
@@ -110,23 +115,23 @@ class OutBoundViewSet(SmsViewSet):
             # check if attributes are present
             if not _from:
                 return Response({"message": "",
-                                "error": "from attribute is missing"})
+                                 "error": "from attribute is missing"})
             if not to:
                 return Response({"message": "",
-                                "error": "to attribute is missing"})
+                                 "error": "to attribute is missing"})
             if not text:
                 return Response({"message": "",
-                                "error": "text attribute is missing"})
+                                 "error": "text attribute is missing"})
             # check if attributes are valid
             if not isinstance(_from, str):
                 return Response({"message": "",
-                                "error": "from attribute is invalid"})
+                                 "error": "from attribute is invalid"})
             if not isinstance(_from, to):
                 return Response({"message": "",
-                                "error": "to attribute is invalid"})
+                                 "error": "to attribute is invalid"})
             if not isinstance(_from, text):
                 return Response({"message": "",
-                                "error": "text attribute is invalid"})
+                                 "error": "text attribute is invalid"})
 
             # check if to attribute present in phone_number table for current
             # user
@@ -141,13 +146,8 @@ class OutBoundViewSet(SmsViewSet):
                 return Response({"message": "",
                                  "error": "sms from {} to {} "
                                           "blocked by STOP request"
-                                .format(_from, to)})
+                                          .format(_from, to)})
 
-            REGEX = "^STOP(\\r\\n|\\r|\\n)?$"
-            if text:
-                pattern = re.compile(REGEX)
-                if pattern.match(text):
-                    cache.set((_from, to), True, timeout=14400)
             res = SmsModel.objects.create(**data)
             res.save()
             return Response({"message": "inbound sms ok",

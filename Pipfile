@@ -6,9 +6,11 @@ name = "pypi"
 [packages]
 djangorestframework = "*"
 django = "*"
-coala-bears = "*"
 django-nose = "*"
 "psycopg2-binary" = "*"
+django-redis = "*"
+pylint = "*"
+pylint-django = "*"
 
 [dev-packages]
 "pep8" = "*"

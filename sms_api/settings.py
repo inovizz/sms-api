@@ -95,6 +95,10 @@ DATABASES = {
         'PASSWORD': '12345',
         'HOST': 'localhost',
         'PORT': '',
+    },
+    'OPTIONS': {
+        'use_unicode': True,
+        'charset': 'utf8'
     }
 }
 

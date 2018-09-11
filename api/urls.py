@@ -1,14 +1,15 @@
+"""Urls file defining routers for app - api."""
 from django.conf.urls import url, include
 from rest_framework import routers
 from . import views
 
-router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'inbound/sms', views.InBoundViewSet)
-router.register(r'outbound/sms', views.OutBoundViewSet)
+ROUTER = routers.DefaultRouter()
+ROUTER.register(r'users', views.UserViewSet)
+ROUTER.register(r'inbound/sms', views.InBoundViewSet)
+ROUTER.register(r'outbound/sms', views.OutBoundViewSet)
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
+    url(r'^', include(ROUTER.urls)),
 ]
 
 app_name = 'api'
